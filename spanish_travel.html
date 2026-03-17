@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#C1440E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>España Express v4</title>
+<style>
+:root {
+  --red:#C1440E; --gold:#E8A020; --dark:#1A1208;
+  --surface:#FBF6EE; --muted:#8B6B4A;
+  --success:#2D6E2D; --danger:#A32D2D; --info:#1a5fa8;
+  --border:rgba(193,68,14,0.18);
+  --serif:Georgia,serif; --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:var(--sans);color:var(--dark);overflow:hidden;background:var(--surface);}
+.screen{display:none;height:100%;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* HOME */
+#home{background:var(--dark);color:#FBF6EE;}
+.h-top{padding:2.2rem 1.5rem 0.8rem;flex-shrink:0;}
+.h-flag{font-size:40px;display:block;margin-bottom:0.4rem;}
+.h-title{font-family:var(--serif);font-size:1.9rem;font-weight:normal;}
+.h-sub{color:#C8A87A;font-size:0.78rem;margin-top:0.2rem;text-transform:uppercase;letter-spacing:.5px;}
+.h-prog{margin:1.2rem 1.5rem 0;flex-shrink:0;}
+.h-prog-lbl{display:flex;justify-content:space-between;font-size:0.75rem;color:#C8A87A;margin-bottom:.35rem;}
+.h-prog-bar{background:rgba(255,255,255,.1);border-radius:4px;height:5px;}
+.h-prog-fill{background:var(--gold);border-radius:4px;height:5px;transition:width .5s;}
+.h-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin:1rem 1.5rem 0;flex-shrink:0;}
+.h-stat{background:rgba(255,255,255,.07);border-radius:10px;padding:.6rem .4rem;text-align:center;}
+.h-stat-n{font-size:1.3rem;font-family:var(--serif);color:var(--gold);}
+.h-stat-l{font-size:0.6rem;color:#C8A87A;text-transform:uppercase;letter-spacing:.4px;margin-top:.1rem;}
+.h-btns{flex:1;overflow-y:auto;padding:.8rem 1.5rem 2rem;display:flex;flex-direction:column;gap:.55rem;}
+.hbtn{border:none;border-radius:13px;padding:.9rem 1.1rem;font-size:.95rem;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:.7rem;text-align:left;}
+.hbtn.primary{background:var(--red);color:#fff;}
+.hbtn.secondary{background:rgba(255,255,255,.1);color:#FBF6EE;}
+.hbtn.accent{background:rgba(232,160,32,.18);color:#E8A020;}
+.hbtn-icon{font-size:1.15rem;width:26px;flex-shrink:0;}
+.hbtn-label strong{display:block;font-size:.88rem;}
+.hbtn-label span{font-size:.7rem;opacity:.65;}
+
+/* SHARED INNER LAYOUT */
+.s-header{display:flex;align-items:center;padding:.85rem 1.25rem;border-bottom:1px solid var(--border);background:#fff;gap:.7rem;flex-shrink:0;}
+.s-back{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+.s-title{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;flex:1;text-align:center;}
+.s-right{font-size:.8rem;color:var(--muted);white-space:nowrap;}
+.catbar{display:flex;gap:.45rem;padding:.6rem .9rem;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.catbar::-webkit-scrollbar{display:none;}
+.chip{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:.25rem .75rem;font-size:.7rem;white-space:nowrap;cursor:pointer;color:var(--muted);font-family:var(--sans);flex-shrink:0;}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* FLASHCARDS */
+.fc-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;overflow:hidden;}
+.card-wrap{width:100%;max-width:380px;perspective:1000px;}
+.card{width:100%;min-height:200px;border-radius:20px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .42s cubic-bezier(.4,0,.2,1);box-shadow:0 3px 20px rgba(0,0,0,.08);}
+.card.flipped{transform:rotateY(180deg);}
+.cface{position:absolute;top:0;left:0;width:100%;min-height:200px;border-radius:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.4rem;}
+.cfront{background:#fff;border:1.5px solid var(--border);}
+.cback{background:var(--red);transform:rotateY(180deg);}
+.chint{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:.65rem;}
+.cfront .chint{color:var(--muted);}
+.cback .chint{color:rgba(255,255,255,.6);}
+.cword{font-family:var(--serif);font-size:1.65rem;text-align:center;line-height:1.2;}
+.cfront .cword{color:var(--dark);}
+.cback .cword{font-size:1.45rem;color:#fff;}
+.csub{font-size:.8rem;margin-top:.55rem;text-align:center;}
+.cfront .csub{color:var(--muted);}
+.cback .csub{color:rgba(255,255,255,.8);}
+.cbadge{position:absolute;top:11px;right:11px;background:rgba(0,0,0,.05);border-radius:7px;font-size:.6rem;padding:.16rem .45rem;color:var(--muted);text-transform:uppercase;}
+.cback .cbadge{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);}
+.fc-hint{font-size:.7rem;color:var(--muted);margin-top:.9rem;}
+/* SM-2 rating buttons */
+.fc-rating{display:flex;gap:.6rem;padding:.65rem 1.25rem 1.5rem;flex-shrink:0;}
+.fc-r-btn{flex:1;border:none;border-radius:11px;padding:.75rem .4rem;font-size:.78rem;font-family:var(--sans);cursor:pointer;line-height:1.3;}
+.fc-r-btn strong{display:block;font-size:.85rem;}
+.rb-0{background:#FCEAEA;color:var(--danger);}
+.rb-1{background:#FFF3E0;color:#a05c00;}
+.rb-2{background:#E8F5E8;color:var(--success);}
+.rb-3{background:#E3F0FF;color:var(--info);}
+.fc-done{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;}
+.fc-done.show{display:flex;}
+.fc-done h2{font-family:var(--serif);font-size:1.45rem;font-weight:normal;}
+.fc-done p{color:var(--muted);margin-top:.45rem;font-size:.85rem;}
+.fc-done-btn{margin-top:1.4rem;background:var(--red);color:#fff;border:none;border-radius:12px;padding:.8rem 1.8rem;font-size:.95rem;cursor:pointer;}
+
+/* SM-2 due badge on card */
+.due-badge{position:absolute;top:11px;left:11px;border-radius:7px;font-size:.58rem;padding:.15rem .42rem;text-transform:uppercase;font-weight:600;}
+.due-new{background:#E3F0FF;color:var(--info);}
+.due-due{background:#FFF3E0;color:#a05c00;}
+.due-ok{background:#E8F5E8;color:var(--success);}
+
+/* PHRASE LIST */
+.pl-search-wrap{padding:.6rem .9rem;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pl-search{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:.5rem .85rem;font-size:.88rem;outline:none;background:#fff;color:var(--dark);font-family:var(--sans);}
+.pl-search:focus{border-color:var(--red);}
+.pl-list{flex:1;overflow-y:auto;padding:.55rem;}
+.pl-item{background:#fff;border-radius:11px;border:1px solid var(--border);padding:.75rem .85rem;margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.pl-es{font-size:.95rem;color:var(--dark);font-family:var(--serif);}
+.pl-en{font-size:.75rem;color:var(--muted);margin-top:.15rem;}
+.pl-cat{font-size:.6rem;background:rgba(193,68,14,.1);color:var(--red);border-radius:7px;padding:.15rem .45rem;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;margin-left:.45rem;flex-shrink:0;}
+.pl-custom{border-left:3px solid var(--gold);}
+
+/* READER */
+.reader-body{flex:1;overflow-y:auto;padding:1.1rem .9rem;}
+.passage{background:#fff;border-radius:13px;border:1px solid var(--border);padding:1rem;margin-bottom:.8rem;}
+.passage h3{font-size:.67rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.6rem;}
+.rtext{font-size:.98rem;line-height:1.85;color:var(--dark);}
+.rword{cursor:pointer;border-radius:3px;padding:0 1px;}
+.rword.hit{background:rgba(193,68,14,.15);color:var(--red);}
+.tooltip{position:fixed;background:var(--dark);color:#fff;border-radius:9px;padding:.5rem .85rem;font-size:.85rem;pointer-events:none;z-index:999;max-width:200px;text-align:center;opacity:0;transition:opacity .2s;}
+.tooltip.show{opacity:1;}
+.tt-es{font-family:var(--serif);font-size:.92rem;}
+.tt-en{font-size:.72rem;opacity:.7;margin-top:.12rem;}
+
+/* QUIZ */
+.quiz-body{flex:1;display:flex;flex-direction:column;padding:1.4rem;overflow-y:auto;}
+.quiz-qlbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.6rem;}
+.quiz-q{font-family:var(--serif);font-size:1.4rem;color:var(--dark);margin-bottom:.35rem;line-height:1.3;}
+.quiz-ctx{font-size:.8rem;color:var(--muted);margin-bottom:1.6rem;}
+.quiz-opts{display:flex;flex-direction:column;gap:.65rem;}
+.quiz-opt{border:1.5px solid var(--border);background:#fff;border-radius:11px;padding:.85rem 1rem;font-size:.9rem;font-family:var(--sans);text-align:left;cursor:pointer;color:var(--dark);}
+.quiz-opt.ok{background:#E8F5E8;border-color:var(--success);color:var(--success);}
+.quiz-opt.bad{background:#FCEAEA;border-color:var(--danger);color:var(--danger);}
+.quiz-fb{margin-top:.9rem;padding:.75rem .85rem;border-radius:11px;font-size:.85rem;display:none;}
+.quiz-fb.show{display:block;}
+.quiz-fb.ok{background:#E8F5E8;color:var(--success);}
+.quiz-fb.bad{background:#FCEAEA;color:var(--danger);}
+.quiz-next{margin-top:auto;padding-top:1rem;background:var(--red);color:#fff;border:none;border-radius:13px;padding:.9rem;font-size:.95rem;font-family:var(--sans);cursor:pointer;display:none;}
+.quiz-next.show{display:block;}
+.quiz-done{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;}
+.quiz-done.show{display:flex;}
+.quiz-done h2{font-family:var(--serif);font-size:1.45rem;font-weight:normal;}
+.quiz-done p{color:var(--muted);margin-top:.45rem;}
+.quiz-done-btn{margin-top:1.4rem;background:var(--red);color:#fff;border:none;border-radius:12px;padding:.8rem 1.8rem;font-size:.95rem;cursor:pointer;}
+
+/* NUMBERS */
+.num-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.4rem;gap:1rem;}
+.num-q{font-family:var(--serif);font-size:2.8rem;color:var(--dark);text-align:center;line-height:1.1;cursor:pointer;}
+.num-sub{font-size:.8rem;color:var(--muted);text-align:center;}
+.num-reveal{display:none;font-size:1.25rem;font-family:var(--serif);color:var(--red);text-align:center;padding:.5rem 1rem;background:rgba(193,68,14,.08);border-radius:9px;}
+.num-input-wrap{width:100%;max-width:290px;display:none;}
+.num-input{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:.6rem .9rem;font-size:1rem;outline:none;background:#fff;color:var(--dark);text-align:center;font-family:var(--sans);}
+.num-check{margin-top:.6rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;cursor:pointer;}
+.num-fb{font-size:.88rem;text-align:center;padding:.45rem .85rem;border-radius:9px;display:none;}
+.num-actions{padding:0 1.4rem 1.8rem;flex-shrink:0;}
+.num-next{width:100%;background:var(--red);color:#fff;border:none;border-radius:13px;padding:.85rem;font-size:.95rem;cursor:pointer;}
+
+/* ADD WORD SCREEN */
+#addword{background:var(--surface);}
+.aw-body{flex:1;overflow-y:auto;padding:1.25rem;}
+.aw-section{background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.1rem;margin-bottom:1rem;}
+.aw-section h3{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.85rem;}
+.aw-row{display:flex;gap:.6rem;margin-bottom:.65rem;align-items:flex-end;}
+.aw-field{flex:1;display:flex;flex-direction:column;gap:.3rem;}
+.aw-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
+.aw-input{border:1.5px solid var(--border);border-radius:9px;padding:.55rem .8rem;font-size:.95rem;outline:none;background:#fff;color:var(--dark);font-family:var(--sans);width:100%;}
+.aw-input:focus{border-color:var(--red);}
+.aw-translate-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.55rem .9rem;font-size:.8rem;cursor:pointer;white-space:nowrap;color:var(--muted);flex-shrink:0;}
+.aw-translate-btn:active{background:var(--border);}
+.aw-cat-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.1rem;}
+.aw-cat-chip{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:.22rem .7rem;font-size:.68rem;white-space:nowrap;cursor:pointer;color:var(--muted);}
+.aw-cat-chip.on{background:var(--red);border-color:var(--red);color:#fff;}
+.aw-add-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:13px;padding:.9rem;font-size:1rem;cursor:pointer;margin-top:.2rem;}
+.aw-msg{text-align:center;font-size:.85rem;padding:.6rem;border-radius:9px;display:none;margin-top:.6rem;}
+.aw-msg.ok{background:#E8F5E8;color:var(--success);}
+.aw-msg.bad{background:#FCEAEA;color:var(--danger);}
+.aw-custom-list{margin-top:.3rem;}
+.aw-custom-item{display:flex;justify-content:space-between;align-items:center;padding:.6rem .2rem;border-bottom:1px solid var(--border);font-size:.88rem;}
+.aw-del{background:none;border:none;color:var(--danger);cursor:pointer;font-size:1rem;padding:.2rem;}
+.aw-status{font-size:.65rem;color:var(--muted);margin-top:.1rem;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="h-top">
+    <span class="h-flag">🇪🇸</span>
+    <div class="h-title">España Express</div>
+    <div class="h-sub">Travel Spanish</div>
+  </div>
+  <div class="h-prog">
+    <div class="h-prog-lbl"><span>Progress</span><span id="prog-txt">0 / 0</span></div>
+    <div class="h-prog-bar"><div class="h-prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="h-stats">
+    <div class="h-stat"><div class="h-stat-n" id="st-due">0</div><div class="h-stat-l">Due today</div></div>
+    <div class="h-stat"><div class="h-stat-n" id="st-learned">0</div><div class="h-stat-l">Learned</div></div>
+    <div class="h-stat"><div class="h-stat-n" id="st-streak">0d</div><div class="h-stat-l">Streak</div></div>
+    <div class="h-stat"><div class="h-stat-n" id="st-custom">0</div><div class="h-stat-l">My words</div></div>
+  </div>
+  <div class="h-btns">
+    <button class="hbtn primary" onclick="openFlashcards('due')"><span class="hbtn-icon">🃏</span><span class="hbtn-label"><strong>Review Due Cards</strong><span id="due-label">SM-2 · cards due today</span></span></button>
+    <button class="hbtn secondary" onclick="openFlashcards('all')"><span class="hbtn-icon">📚</span><span class="hbtn-label"><strong>All Flashcards</strong><span>Browse all · filter by category</span></span></button>
+    <button class="hbtn accent" onclick="openAddWord()"><span class="hbtn-icon">➕</span><span class="hbtn-label"><strong>Add Word</strong><span>Auto-translate · add to flashcards</span></span></button>
+    <button class="hbtn secondary" onclick="openQuiz()"><span class="hbtn-icon">🎯</span><span class="hbtn-label"><strong>Quick Quiz</strong><span>Multiple choice · 10 questions</span></span></button>
+    <button class="hbtn secondary" onclick="openPhrases()"><span class="hbtn-icon">📖</span><span class="hbtn-label"><strong>Phrase Browser</strong><span>All phrases · tap to reveal</span></span></button>
+    <button class="hbtn secondary" onclick="openReader()"><span class="hbtn-icon">🗺️</span><span class="hbtn-label"><strong>Reading Practice</strong><span>Tap any word to translate</span></span></button>
+    <button class="hbtn secondary" onclick="openArticle()"><span class="hbtn-icon">📰</span><span class="hbtn-label"><strong>Article Reader</strong><span>Paste a URL · tap words to translate</span></span></button>
+    <button class="hbtn secondary" onclick="openNumbers()"><span class="hbtn-icon">🔢</span><span class="hbtn-label"><strong>Numbers 1–1,000,000</strong><span>Drill, read & type</span></span></button>
+    <button class="hbtn secondary" onclick="openSpecials('Finance')"><span class="hbtn-icon">💼</span><span class="hbtn-label"><strong>Financial Spanish</strong><span>50 business & banking terms</span></span></button>
+    <button class="hbtn secondary" onclick="openSpecials('Sports')"><span class="hbtn-icon">⚽</span><span class="hbtn-label"><strong>Sports Spanish</strong><span>Tennis & football vocabulary</span></span></button>
+  </div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="flashcard" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Flashcards</div>
+    <div class="s-right" id="fc-count">1/20</div>
+  </div>
+  <div class="catbar" id="fc-catbar"></div>
+  <div class="fc-area" id="fc-area">
+    <div class="card-wrap">
+      <div class="card" id="the-card" onclick="flipCard()">
+        <div class="cface cfront">
+          <div class="chint">English — what's the Spanish?</div>
+          <div class="cword" id="cf-en"></div>
+          <div class="csub" id="cf-ctx"></div>
+          <div class="cbadge" id="cf-cat"></div>
+          <div class="due-badge" id="cf-due"></div>
+        </div>
+        <div class="cface cback">
+          <div class="chint">Español ✓</div>
+          <div class="cword" id="cf-es"></div>
+          <div class="csub" id="cf-tip"></div>
+          <div class="cbadge">rate yourself →</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-hint" id="fc-hint">Tap card to reveal</div>
+  </div>
+  <div class="fc-rating" id="fc-rating" style="display:none">
+    <button class="fc-r-btn rb-0" onclick="fcRate(0)"><strong>✗</strong>No idea</button>
+    <button class="fc-r-btn rb-1" onclick="fcRate(1)"><strong>~</strong>Hard</button>
+    <button class="fc-r-btn rb-2" onclick="fcRate(2)"><strong>✓</strong>Good</button>
+    <button class="fc-r-btn rb-3" onclick="fcRate(3)"><strong>★</strong>Easy</button>
+  </div>
+  <div class="fc-done" id="fc-done">
+    <div style="font-size:2.3rem">🎉</div>
+    <h2>Session complete!</h2>
+    <p id="fc-done-msg"></p>
+    <button class="fc-done-btn" onclick="goHome()">Back to home</button>
+  </div>
+</div>
+
+<!-- ADD WORD -->
+<div id="addword" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Add Word</div>
+  </div>
+  <div class="aw-body">
+    <div class="aw-section">
+      <h3>Translate & Add</h3>
+      <div class="aw-row">
+        <div class="aw-field">
+          <div class="aw-label">Your language (EN or PL)</div>
+          <input class="aw-input" id="aw-source" type="text" placeholder="e.g. mortgage or hipoteka">
+        </div>
+        <button class="aw-translate-btn" onclick="awTranslate()">🔄 Translate</button>
+      </div>
+      <div class="aw-row">
+        <div class="aw-field">
+          <div class="aw-label">English</div>
+          <input class="aw-input" id="aw-en" type="text" placeholder="English">
+        </div>
+        <div class="aw-field">
+          <div class="aw-label">Español</div>
+          <input class="aw-input" id="aw-es" type="text" placeholder="Español">
+        </div>
+      </div>
+      <div class="aw-label" style="margin-bottom:.4rem">Category</div>
+      <div class="aw-cat-row" id="aw-cats"></div>
+      <button class="aw-add-btn" onclick="awAdd()" style="margin-top:.9rem">Add to Flashcards</button>
+      <div class="aw-msg" id="aw-msg"></div>
+    </div>
+    <div class="aw-section">
+      <h3>My Words (<span id="aw-count">0</span>)</h3>
+      <div class="aw-custom-list" id="aw-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PHRASES -->
+<div id="phrases" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Phrase Browser</div>
+  </div>
+  <div class="pl-search-wrap">
+    <input class="pl-search" type="search" id="pl-search" placeholder="Search Spanish or English…" oninput="plSearch(this.value)">
+  </div>
+  <div class="catbar" id="pl-catbar"></div>
+  <div class="pl-list" id="pl-list"></div>
+</div>
+
+<!-- READER -->
+<div id="reader" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Reading Practice</div>
+  </div>
+  <div class="reader-body" id="reader-body"></div>
+  <div class="tooltip" id="tooltip"><div class="tt-es" id="tt-es"></div><div class="tt-en" id="tt-en"></div></div>
+</div>
+
+<!-- ARTICLE READER -->
+<div id="article" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Article Reader</div>
+  </div>
+  <div id="art-url-bar" style="padding:.75rem 1rem;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">📡 BBC Mundo — latest 5 articles, tap to read & translate</div>
+    <button onclick="artLoadBBC()" style="background:var(--red);color:#fff;border:none;border-radius:9px;padding:.45rem 1rem;font-size:.82rem;cursor:pointer;">↺ Refresh</button>
+  </div>
+  <div id="art-status" style="display:none;padding:.6rem 1rem;font-size:.8rem;flex-shrink:0;"></div>
+  <div class="reader-body" id="art-body">
+    <div style="padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.88rem;">
+      <div style="font-size:2rem;margin-bottom:.75rem">📰</div>
+      Paste the URL of any Spanish article above.<br>Tap any word to translate instantly.
+    </div>
+  </div>
+  <div class="tooltip" id="art-tooltip"><div class="tt-es" id="art-tt-es"></div><div class="tt-en" id="art-tt-en"></div></div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Quick Quiz</div>
+    <div class="s-right" id="quiz-prog">1/10</div>
+  </div>
+  <div class="catbar">
+    <button class="chip on" id="qm-es2en" onclick="quizSetMode('es2en',this)">ES → English</button>
+    <button class="chip" id="qm-en2es" onclick="quizSetMode('en2es',this)">EN → Spanish</button>
+  </div>
+  <div class="quiz-body" id="quiz-body">
+    <div class="quiz-qlbl" id="quiz-qlbl">What does this mean in English?</div>
+    <div class="quiz-q" id="quiz-q"></div>
+    <div class="quiz-ctx" id="quiz-ctx"></div>
+    <div class="quiz-opts" id="quiz-opts"></div>
+    <div class="quiz-fb" id="quiz-fb"></div>
+    <button class="quiz-next" id="quiz-next" onclick="quizNext()">Next →</button>
+  </div>
+  <div class="quiz-done" id="quiz-done">
+    <div style="font-size:2.3rem" id="qd-icon">🏆</div>
+    <h2 id="qd-h2">Done!</h2>
+    <p id="qd-p"></p>
+    <button class="quiz-done-btn" onclick="goHome()">Back to home</button>
+  </div>
+</div>
+
+<!-- NUMBERS -->
+<div id="numbers" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title">Numbers</div>
+    <div class="s-right" id="num-mode-lbl">Drill</div>
+  </div>
+  <div class="catbar">
+    <button class="chip on" id="nc-drill" onclick="numSetMode('drill',this)">Drill</button>
+    <button class="chip" id="nc-read" onclick="numSetMode('read',this)">Read Spanish</button>
+    <button class="chip" id="nc-type" onclick="numSetMode('type',this)">Type it</button>
+    <button class="chip" id="nc-quiz" onclick="numSetMode('quiz',this)">Number Quiz</button>
+  </div>
+  <div class="num-body">
+    <div class="num-q" id="num-q"></div>
+    <div class="num-sub" id="num-sub"></div>
+    <div class="num-reveal" id="num-reveal"></div>
+    <div class="num-input-wrap" id="num-input-wrap">
+      <input class="num-input" id="num-input" type="text" placeholder="Type Spanish…">
+      <button class="num-check" onclick="numCheck()">Check</button>
+    </div>
+    <div class="quiz-opts" id="num-quiz-opts" style="width:100%;max-width:340px;display:none"></div>
+    <div class="num-fb" id="num-fb"></div>
+  </div>
+  <div class="num-actions"><button class="num-next" onclick="numNext()">Next number →</button></div>
+</div>
+
+<!-- SPECIALS -->
+<div id="specials" class="screen">
+  <div class="s-header">
+    <button class="s-back" onclick="goHome()">←</button>
+    <div class="s-title" id="sp-title">Vocabulary</div>
+  </div>
+  <div class="pl-search-wrap">
+    <input class="pl-search" type="search" id="sp-search" placeholder="Search…" oninput="spSearch(this.value)">
+  </div>
+  <div class="catbar" id="sp-catbar"></div>
+  <div class="pl-list" id="sp-list"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+var PHRASES = [
+  {es:"Hola",en:"Hello",cat:"Greetings",tip:"Works all day"},
+  {es:"Buenos días",en:"Good morning",cat:"Greetings",tip:"Until about noon"},
+  {es:"Buenas tardes",en:"Good afternoon",cat:"Greetings"},
+  {es:"Buenas noches",en:"Good evening / night",cat:"Greetings"},
+  {es:"¿Cómo estás?",en:"How are you? (informal)",cat:"Greetings"},
+  {es:"Bien, gracias",en:"Fine, thank you",cat:"Greetings"},
+  {es:"¿Cómo te llamas?",en:"What is your name?",cat:"Greetings"},
+  {es:"Me llamo…",en:"My name is…",cat:"Greetings"},
+  {es:"Mucho gusto",en:"Nice to meet you",cat:"Greetings"},
+  {es:"Hasta luego",en:"See you later",cat:"Greetings"},
+  {es:"Hasta mañana",en:"See you tomorrow",cat:"Greetings"},
+  {es:"Adiós",en:"Goodbye",cat:"Greetings"},
+  {es:"Por favor",en:"Please",cat:"Politeness",tip:"Use liberally"},
+  {es:"Gracias",en:"Thank you",cat:"Politeness"},
+  {es:"Muchas gracias",en:"Thank you very much",cat:"Politeness"},
+  {es:"De nada",en:"You're welcome",cat:"Politeness"},
+  {es:"Perdona / Perdone",en:"Excuse me / Sorry",cat:"Politeness"},
+  {es:"Lo siento",en:"I'm sorry",cat:"Politeness"},
+  {es:"Con permiso",en:"Excuse me (passing through)",cat:"Politeness"},
+  {es:"¿Habla inglés?",en:"Do you speak English?",cat:"Politeness"},
+  {es:"No hablo español",en:"I don't speak Spanish",cat:"Politeness"},
+  {es:"No entiendo",en:"I don't understand",cat:"Politeness"},
+  {es:"Más despacio, por favor",en:"More slowly, please",cat:"Politeness"},
+  {es:"¿Puede repetir?",en:"Can you repeat?",cat:"Politeness"},
+  {es:"¿Dónde está…?",en:"Where is…?",cat:"Directions",tip:"Most useful phrase"},
+  {es:"¿Cómo llego a…?",en:"How do I get to…?",cat:"Directions"},
+  {es:"A la derecha",en:"To the right",cat:"Directions"},
+  {es:"A la izquierda",en:"To the left",cat:"Directions"},
+  {es:"Todo recto",en:"Straight ahead",cat:"Directions"},
+  {es:"La calle",en:"The street",cat:"Directions"},
+  {es:"La plaza",en:"The square / plaza",cat:"Directions"},
+  {es:"El semáforo",en:"The traffic light",cat:"Directions"},
+  {es:"La esquina",en:"The corner",cat:"Directions"},
+  {es:"Cerca / Lejos",en:"Near / Far",cat:"Directions"},
+  {es:"El metro",en:"The subway / metro",cat:"Directions"},
+  {es:"La parada de autobús",en:"The bus stop",cat:"Directions"},
+  {es:"La estación de tren",en:"The train station",cat:"Directions"},
+  {es:"El aeropuerto",en:"The airport",cat:"Directions"},
+  {es:"El taxi",en:"The taxi",cat:"Directions"},
+  {es:"Una mesa para dos",en:"A table for two",cat:"Restaurant"},
+  {es:"La carta, por favor",en:"The menu, please",cat:"Restaurant"},
+  {es:"¿Qué recomienda?",en:"What do you recommend?",cat:"Restaurant"},
+  {es:"Quiero…",en:"I want / I'd like…",cat:"Restaurant"},
+  {es:"Para mí…",en:"For me…",cat:"Restaurant",tip:"Polite way to order"},
+  {es:"Sin gluten",en:"Gluten-free",cat:"Restaurant"},
+  {es:"Vegetariano/a",en:"Vegetarian",cat:"Restaurant"},
+  {es:"La cuenta, por favor",en:"The bill, please",cat:"Restaurant"},
+  {es:"Está delicioso",en:"It's delicious",cat:"Restaurant"},
+  {es:"Sin gas / Con gas",en:"Still / Sparkling water",cat:"Restaurant"},
+  {es:"Una caña",en:"A small beer",cat:"Restaurant",tip:"Classic Spanish order"},
+  {es:"El desayuno / almuerzo / cena",en:"Breakfast / lunch / dinner",cat:"Restaurant"},
+  {es:"Las tapas",en:"Small dishes / tapas",cat:"Restaurant"},
+  {es:"¿Cuánto cuesta?",en:"How much does it cost?",cat:"Shopping"},
+  {es:"Es muy caro",en:"It's very expensive",cat:"Shopping"},
+  {es:"¿Tiene algo más barato?",en:"Do you have something cheaper?",cat:"Shopping"},
+  {es:"Me lo llevo",en:"I'll take it",cat:"Shopping"},
+  {es:"¿Acepta tarjeta?",en:"Do you accept card?",cat:"Shopping"},
+  {es:"En efectivo",en:"In cash",cat:"Shopping"},
+  {es:"La talla",en:"The size (clothing)",cat:"Shopping"},
+  {es:"El recibo",en:"The receipt",cat:"Shopping"},
+  {es:"La farmacia",en:"The pharmacy",cat:"Shopping"},
+  {es:"El supermercado",en:"The supermarket",cat:"Shopping"},
+  {es:"Tengo una reserva",en:"I have a reservation",cat:"Hotel"},
+  {es:"Una habitación doble",en:"A double room",cat:"Hotel"},
+  {es:"¿A qué hora es el check-out?",en:"What time is check-out?",cat:"Hotel"},
+  {es:"¿Hay wifi?",en:"Is there wifi?",cat:"Hotel"},
+  {es:"¿Cuál es la contraseña?",en:"What's the password?",cat:"Hotel"},
+  {es:"La llave",en:"The key / keycard",cat:"Hotel"},
+  {es:"El ascensor",en:"The elevator / lift",cat:"Hotel"},
+  {es:"Hay un problema en la habitación",en:"There's a problem in the room",cat:"Hotel"},
+  {es:"¡Ayuda!",en:"Help!",cat:"Emergency",tip:"Shout loudly"},
+  {es:"¡Llame a la policía!",en:"Call the police!",cat:"Emergency"},
+  {es:"¡Llame a una ambulancia!",en:"Call an ambulance!",cat:"Emergency"},
+  {es:"Necesito un médico",en:"I need a doctor",cat:"Emergency"},
+  {es:"Me han robado",en:"I have been robbed",cat:"Emergency"},
+  {es:"Estoy perdido/a",en:"I'm lost",cat:"Emergency"},
+  {es:"Me duele…",en:"My … hurts",cat:"Emergency"},
+  {es:"El hospital",en:"The hospital",cat:"Emergency"},
+  {es:"El pasaporte",en:"The passport",cat:"Emergency"},
+  {es:"¿Dónde está el baño?",en:"Where is the bathroom?",cat:"Emergency"},
+  {es:"Un billete para…",en:"A ticket to…",cat:"Transport"},
+  {es:"De ida / De ida y vuelta",en:"One way / Return",cat:"Transport"},
+  {es:"El andén",en:"The platform",cat:"Transport"},
+  {es:"El retraso",en:"The delay",cat:"Transport"},
+  {es:"¿Está ocupado este asiento?",en:"Is this seat taken?",cat:"Transport"},
+  {es:"Bajar en la próxima",en:"Get off at the next stop",cat:"Transport"},
+  {es:"Tengo prisa",en:"I'm in a hurry",cat:"Transport"},
+  {es:"La entrada",en:"The ticket / entrance",cat:"Sightseeing"},
+  {es:"¿Cuánto cuesta la entrada?",en:"How much is the ticket?",cat:"Sightseeing"},
+  {es:"El museo",en:"The museum",cat:"Sightseeing"},
+  {es:"La catedral",en:"The cathedral",cat:"Sightseeing"},
+  {es:"La playa",en:"The beach",cat:"Sightseeing"},
+  {es:"¿Puedo hacer fotos?",en:"Can I take photos?",cat:"Sightseeing"},
+  {es:"¿Me puede sacar una foto?",en:"Can you take my photo?",cat:"Sightseeing"},
+  {es:"Grande / Pequeño",en:"Big / Small",cat:"Essentials"},
+  {es:"Caliente / Frío",en:"Hot / Cold",cat:"Essentials"},
+  {es:"Bueno / Malo",en:"Good / Bad",cat:"Essentials"},
+  {es:"Quiero",en:"I want",cat:"Essentials"},
+  {es:"Necesito",en:"I need",cat:"Essentials"},
+  {es:"Hay…",en:"There is / There are…",cat:"Essentials"},
+  {es:"No sé",en:"I don't know",cat:"Essentials"},
+  {es:"Vale",en:"Okay (Spain)",cat:"Essentials",tip:"Use constantly in Spain"},
+  {es:"Claro",en:"Of course / Sure",cat:"Essentials"},
+  {es:"¡Salud!",en:"Cheers!",cat:"Essentials"},
+  {es:"El pan",en:"Bread",cat:"Food"},
+  {es:"La carne",en:"Meat",cat:"Food"},
+  {es:"El pescado",en:"Fish",cat:"Food"},
+  {es:"El pollo",en:"Chicken",cat:"Food"},
+  {es:"La paella",en:"Paella (rice dish)",cat:"Food"},
+  {es:"El jamón",en:"Cured ham",cat:"Food",tip:"Jamón ibérico = premium"},
+  {es:"El café con leche",en:"Coffee with milk",cat:"Food"},
+  {es:"El cortado",en:"Espresso with a splash of milk",cat:"Food"},
+  {es:"Entrada / Salida",en:"Entrance / Exit",cat:"Signs"},
+  {es:"Empujar / Tirar",en:"Push / Pull",cat:"Signs"},
+  {es:"Prohibido",en:"Forbidden / No…",cat:"Signs"},
+  {es:"Cuidado",en:"Caution / Careful",cat:"Signs"},
+  {es:"Rebajas",en:"Sales / Discounts",cat:"Signs"},
+  {es:"Completo",en:"Full / No vacancy",cat:"Signs"},
+];
+
+var SPECIALS = [
+  {es:"El banco",en:"The bank",cat:"Finance"},
+  {es:"La cuenta bancaria",en:"The bank account",cat:"Finance"},
+  {es:"El saldo",en:"The balance",cat:"Finance"},
+  {es:"La transferencia",en:"The bank transfer",cat:"Finance"},
+  {es:"El tipo de interés",en:"The interest rate",cat:"Finance"},
+  {es:"El préstamo",en:"The loan",cat:"Finance"},
+  {es:"La hipoteca",en:"The mortgage",cat:"Finance"},
+  {es:"La inversión",en:"The investment",cat:"Finance"},
+  {es:"El inversor",en:"The investor",cat:"Finance"},
+  {es:"El accionista",en:"The shareholder",cat:"Finance"},
+  {es:"Las acciones",en:"Shares / stocks",cat:"Finance"},
+  {es:"La bolsa",en:"The stock exchange",cat:"Finance"},
+  {es:"El rendimiento",en:"The return / yield",cat:"Finance"},
+  {es:"La rentabilidad",en:"Profitability / ROI",cat:"Finance"},
+  {es:"El beneficio",en:"The profit",cat:"Finance"},
+  {es:"La pérdida",en:"The loss",cat:"Finance"},
+  {es:"El ingreso",en:"The income / revenue",cat:"Finance"},
+  {es:"El gasto",en:"The expense",cat:"Finance"},
+  {es:"El presupuesto",en:"The budget",cat:"Finance"},
+  {es:"La factura",en:"The invoice",cat:"Finance"},
+  {es:"El IVA",en:"VAT",cat:"Finance",tip:"Impuesto sobre el Valor Añadido"},
+  {es:"El impuesto",en:"The tax",cat:"Finance"},
+  {es:"El capital",en:"The capital",cat:"Finance"},
+  {es:"La deuda",en:"The debt",cat:"Finance"},
+  {es:"El crédito",en:"The credit",cat:"Finance"},
+  {es:"El tipo de cambio",en:"The exchange rate",cat:"Finance"},
+  {es:"La inflación",en:"Inflation",cat:"Finance"},
+  {es:"El PIB",en:"GDP",cat:"Finance",tip:"Producto Interior Bruto"},
+  {es:"La empresa",en:"The company",cat:"Finance"},
+  {es:"La fusión",en:"The merger",cat:"Finance"},
+  {es:"La adquisición",en:"The acquisition",cat:"Finance"},
+  {es:"El contrato",en:"The contract",cat:"Finance"},
+  {es:"La auditoría",en:"The audit",cat:"Finance"},
+  {es:"El balance",en:"The balance sheet",cat:"Finance"},
+  {es:"La cuenta de resultados",en:"Income statement / P&L",cat:"Finance"},
+  {es:"El flujo de caja",en:"Cash flow",cat:"Finance"},
+  {es:"El margen",en:"The margin",cat:"Finance"},
+  {es:"La liquidez",en:"Liquidity",cat:"Finance"},
+  {es:"El riesgo",en:"The risk",cat:"Finance"},
+  {es:"La cartera",en:"The portfolio",cat:"Finance"},
+  {es:"El dividendo",en:"The dividend",cat:"Finance"},
+  {es:"La OPV",en:"IPO",cat:"Finance",tip:"Oferta Pública de Venta"},
+  {es:"El tenis",en:"Tennis",cat:"Tennis"},
+  {es:"La raqueta",en:"The racket",cat:"Tennis"},
+  {es:"La red",en:"The net",cat:"Tennis"},
+  {es:"La pista",en:"The court",cat:"Tennis"},
+  {es:"La pista de tierra batida",en:"Clay court",cat:"Tennis",tip:"Spain's speciality"},
+  {es:"El saque",en:"The serve",cat:"Tennis"},
+  {es:"El resto",en:"The return of serve",cat:"Tennis"},
+  {es:"El golpe de derecha",en:"The forehand",cat:"Tennis"},
+  {es:"El revés",en:"The backhand",cat:"Tennis"},
+  {es:"La volea",en:"The volley",cat:"Tennis"},
+  {es:"El ace",en:"The ace",cat:"Tennis"},
+  {es:"La doble falta",en:"The double fault",cat:"Tennis"},
+  {es:"El juego",en:"The game",cat:"Tennis"},
+  {es:"El set",en:"The set",cat:"Tennis"},
+  {es:"El partido",en:"The match",cat:"Tennis"},
+  {es:"El tie-break",en:"The tiebreak",cat:"Tennis"},
+  {es:"Cuarenta iguales",en:"Deuce",cat:"Tennis"},
+  {es:"Ventaja",en:"Advantage",cat:"Tennis"},
+  {es:"El torneo",en:"The tournament",cat:"Tennis"},
+  {es:"El Grand Slam",en:"The Grand Slam",cat:"Tennis"},
+  {es:"El árbitro de silla",en:"The chair umpire",cat:"Tennis"},
+  {es:"¡Fuera!",en:"Out!",cat:"Tennis"},
+  {es:"La línea de fondo",en:"The baseline",cat:"Tennis"},
+  {es:"El fútbol",en:"Football / soccer",cat:"Football"},
+  {es:"El balón",en:"The ball",cat:"Football"},
+  {es:"El campo",en:"The pitch / field",cat:"Football"},
+  {es:"La portería",en:"The goal (frame)",cat:"Football"},
+  {es:"El gol",en:"The goal (score)",cat:"Football"},
+  {es:"El portero",en:"The goalkeeper",cat:"Football"},
+  {es:"El delantero",en:"The forward / striker",cat:"Football"},
+  {es:"El centrocampista",en:"The midfielder",cat:"Football"},
+  {es:"El defensa",en:"The defender",cat:"Football"},
+  {es:"El árbitro",en:"The referee",cat:"Football"},
+  {es:"El VAR",en:"VAR",cat:"Football"},
+  {es:"El fuera de juego",en:"Offside",cat:"Football"},
+  {es:"La falta",en:"The foul",cat:"Football"},
+  {es:"La tarjeta amarilla",en:"The yellow card",cat:"Football"},
+  {es:"La tarjeta roja",en:"The red card",cat:"Football"},
+  {es:"El penalti",en:"The penalty",cat:"Football"},
+  {es:"El córner",en:"The corner kick",cat:"Football"},
+  {es:"El tiro libre",en:"The free kick",cat:"Football"},
+  {es:"El cabezazo",en:"The header",cat:"Football"},
+  {es:"El pase",en:"The pass",cat:"Football"},
+  {es:"El regate",en:"The dribble",cat:"Football"},
+  {es:"El empate",en:"The draw / tie",cat:"Football"},
+  {es:"El tiempo añadido",en:"Added / injury time",cat:"Football"},
+  {es:"La prórroga",en:"Extra time",cat:"Football"},
+  {es:"La tanda de penaltis",en:"Penalty shootout",cat:"Football"},
+  {es:"El descanso",en:"Half time",cat:"Football"},
+  {es:"¡Gol!",en:"Goal!",cat:"Football"},
+];
+
+// ═══════════════════════════════════════════════════════════
+// SM-2 ALGORITHM
+// ═══════════════════════════════════════════════════════════
+// Each card has: { interval, repetitions, ef, nextDue }
+// quality: 0=blackout, 1=hard, 2=good, 3=easy
+
+function sm2Update(card, quality) {
+  // q mapped: 0->0, 1->2, 2->4, 3->5  (SM-2 uses 0-5)
+  var q = [0, 2, 4, 5][quality];
+  if (q < 3) {
+    card.repetitions = 0;
+    card.interval = 1;
+  } else {
+    if (card.repetitions === 0) card.interval = 1;
+    else if (card.repetitions === 1) card.interval = 6;
+    else card.interval = Math.round(card.interval * card.ef);
+    card.repetitions += 1;
+  }
+  card.ef = Math.max(1.3, card.ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
+  var now = new Date();
+  now.setHours(0,0,0,0);
+  card.nextDue = now.getTime() + card.interval * 86400000;
+  return card;
+}
+
+function cardKey(p) { return 'sm2_' + (p.es || '').replace(/\s/g,'_').substring(0,20); }
+
+function getCard(p) {
+  var k = cardKey(p);
+  var saved = localStorage.getItem(k);
+  if (saved) return JSON.parse(saved);
+  return { interval:1, repetitions:0, ef:2.5, nextDue:0 };
+}
+
+function saveCard(p, card) {
+  localStorage.setItem(cardKey(p), JSON.stringify(card));
+}
+
+function isDue(p) {
+  var c = getCard(p);
+  var today = new Date(); today.setHours(0,0,0,0);
+  return c.nextDue <= today.getTime();
+}
+
+function cardStatus(p) {
+  var c = getCard(p);
+  if (c.repetitions === 0) return 'new';
+  var today = new Date(); today.setHours(0,0,0,0);
+  return c.nextDue <= today.getTime() ? 'due' : 'ok';
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════════════════════
+var state = {
+  sessions: +localStorage.getItem('sp_sessions') || 0,
+  streak: +localStorage.getItem('sp_streak') || 0,
+  lastDate: localStorage.getItem('sp_lastDate') || ''
+};
+function saveState() {
+  localStorage.setItem('sp_sessions', ''+state.sessions);
+  localStorage.setItem('sp_streak', ''+state.streak);
+  localStorage.setItem('sp_lastDate', state.lastDate);
+}
+
+function getCustomWords() { return JSON.parse(localStorage.getItem('sp_custom') || '[]'); }
+function saveCustomWords(arr) { localStorage.setItem('sp_custom', JSON.stringify(arr)); }
+
+function allPhrases() { return PHRASES.concat(getCustomWords()); }
+
+// ═══════════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════════
+function goHome() {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('home').classList.add('active');
+  var all = allPhrases();
+  var due = all.filter(function(p){ return isDue(p); });
+  var learned = all.filter(function(p){ return getCard(p).repetitions > 0; });
+  var custom = getCustomWords();
+  document.getElementById('st-due').textContent = due.length;
+  document.getElementById('st-learned').textContent = learned.length;
+  document.getElementById('st-streak').textContent = state.streak + 'd';
+  document.getElementById('st-custom').textContent = custom.length;
+  document.getElementById('prog-txt').textContent = learned.length + ' / ' + all.length;
+  document.getElementById('prog-fill').style.width = Math.min(100, all.length ? learned.length/all.length*100 : 0).toFixed(1)+'%';
+  document.getElementById('due-label').textContent = due.length ? due.length + ' cards due · SM-2' : 'All caught up! · SM-2';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAT BAR HELPER
+// ═══════════════════════════════════════════════════════════
+function makeCatBar(barId, cats, activeCat, onSelect) {
+  var bar = document.getElementById(barId);
+  bar.innerHTML = '';
+  cats.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.textContent = c;
+    btn.className = 'chip' + (c === activeCat ? ' on' : '');
+    btn.onclick = function(){ onSelect(c); };
+    bar.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// FLASHCARDS + SM-2
+// ═══════════════════════════════════════════════════════════
+var fcDeck = [], fcIdx = 0, fcFlipped = false, fcMode = 'due', fcCat = 'All';
+var FC_CATS = ['All'].concat(Array.from(new Set(PHRASES.map(function(p){ return p.cat; }))).concat(['My Words']));
+
+function openFlashcards(mode, cat) {
+  fcMode = mode || 'due';
+  fcCat = cat || 'All';
+  makeCatBar('fc-catbar', FC_CATS, fcCat, function(c){ openFlashcards(fcMode, c); });
+  var pool = allPhrases();
+  if (fcCat === 'My Words') pool = getCustomWords();
+  else if (fcCat !== 'All') pool = pool.filter(function(p){ return p.cat === fcCat; });
+  if (fcMode === 'due') pool = pool.filter(function(p){ return isDue(p); });
+  // shuffle
+  for (var i = pool.length-1; i>0; i--) { var j=Math.floor(Math.random()*(i+1)); var t=pool[i];pool[i]=pool[j];pool[j]=t; }
+  fcDeck = pool.slice(0, fcMode === 'due' ? pool.length : 20);
+  fcIdx = 0; fcFlipped = false;
+  document.getElementById('fc-area').style.display = 'flex';
+  document.getElementById('fc-rating').style.display = 'none';
+  document.getElementById('fc-done').classList.remove('show');
+  if (fcDeck.length === 0) {
+    document.getElementById('fc-area').style.display = 'none';
+    document.getElementById('fc-done-msg').textContent = fcMode === 'due' ? 'No cards due today. Come back tomorrow!' : 'No cards in this category.';
+    document.getElementById('fc-done').classList.add('show');
+  } else {
+    fcShowCard();
+  }
+  showScreen('flashcard');
+}
+
+function fcShowCard() {
+  fcFlipped = false;
+  document.getElementById('the-card').classList.remove('flipped');
+  document.getElementById('fc-hint').style.display = '';
+  document.getElementById('fc-rating').style.display = 'none';
+  var p = fcDeck[fcIdx];
+  document.getElementById('cf-en').textContent = p.en;
+  document.getElementById('cf-es').textContent = p.es;
+  document.getElementById('cf-ctx').textContent = '';
+  document.getElementById('cf-tip').textContent = p.tip || '';
+  document.getElementById('cf-cat').textContent = p.cat || 'Custom';
+  var status = cardStatus(p);
+  var badge = document.getElementById('cf-due');
+  badge.textContent = status === 'new' ? 'new' : status === 'due' ? 'due' : '✓';
+  badge.className = 'due-badge ' + (status === 'new' ? 'due-new' : status === 'due' ? 'due-due' : 'due-ok');
+  document.getElementById('fc-count').textContent = (fcIdx+1) + '/' + fcDeck.length;
+}
+
+function flipCard() {
+  if (fcFlipped) return;
+  fcFlipped = true;
+  document.getElementById('the-card').classList.add('flipped');
+  document.getElementById('fc-hint').style.display = 'none';
+  document.getElementById('fc-rating').style.display = 'flex';
+}
+
+function fcRate(quality) {
+  var p = fcDeck[fcIdx];
+  var card = getCard(p);
+  sm2Update(card, quality);
+  saveCard(p, card);
+  fcIdx++;
+  if (fcIdx < fcDeck.length) {
+    fcShowCard();
+  } else {
+    var today = new Date().toDateString();
+    if (state.lastDate !== today) {
+      state.sessions++;
+      var yesterday = new Date(Date.now()-86400000).toDateString();
+      state.streak = (state.lastDate === yesterday) ? state.streak+1 : 1;
+      state.lastDate = today;
+      saveState();
+    }
+    document.getElementById('fc-area').style.display = 'none';
+    document.getElementById('fc-rating').style.display = 'none';
+    var remaining = allPhrases().filter(function(ph){ return isDue(ph); }).length;
+    document.getElementById('fc-done-msg').textContent = 'Session done! ' + remaining + ' cards still due today.';
+    document.getElementById('fc-done').classList.add('show');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD WORD
+// ═══════════════════════════════════════════════════════════
+var awCat = 'Custom';
+var AW_CATS = ['Custom','Greetings','Politeness','Directions','Restaurant','Shopping','Hotel','Emergency','Transport','Sightseeing','Essentials','Food','Signs','Finance','Tennis','Football'];
+
+function openAddWord() {
+  awCat = 'Custom';
+  renderAwCats();
+  renderAwList();
+  document.getElementById('aw-source').value = '';
+  document.getElementById('aw-en').value = '';
+  document.getElementById('aw-es').value = '';
+  document.getElementById('aw-msg').style.display = 'none';
+  showScreen('addword');
+}
+
+function renderAwCats() {
+  var wrap = document.getElementById('aw-cats');
+  wrap.innerHTML = '';
+  AW_CATS.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.className = 'aw-cat-chip' + (c === awCat ? ' on' : '');
+    btn.textContent = c;
+    btn.onclick = function(){ awCat = c; renderAwCats(); };
+    wrap.appendChild(btn);
+  });
+}
+
+function awTranslate() {
+  var src = document.getElementById('aw-source').value.trim();
+  if (!src) { awShowMsg('Please type a word first.', 'bad'); return; }
+  var btn = document.querySelector('.aw-translate-btn');
+  btn.textContent = '⏳…';
+  btn.disabled = true;
+
+  var plChars = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/;
+  var isPolish = plChars.test(src);
+  var isSpanish = /[áéíóúñü¿¡]/i.test(src);
+  var sourceLang = isPolish ? 'pl' : isSpanish ? 'es' : 'en';
+
+  function mymemory(text, from, to, cb) {
+    var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + from + '%7C' + to;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 8000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var d = JSON.parse(xhr.responseText);
+          if (d.responseStatus === 200 || d.responseStatus === '200') {
+            cb(null, d.responseData.translatedText);
+          } else {
+            cb('API error: ' + d.responseStatus, '');
+          }
+        } catch(e) { cb('Parse error', ''); }
+      } else { cb('HTTP ' + xhr.status, ''); }
+    };
+    xhr.onerror = function() { cb('Network error — check internet connection', ''); };
+    xhr.ontimeout = function() { cb('Timeout — API did not respond', ''); };
+    xhr.send();
+  }
+
+  function done() { btn.textContent = '🔄 Translate'; btn.disabled = false; }
+
+  if (sourceLang === 'en') {
+    mymemory(src, 'en', 'es', function(err, es) {
+      done();
+      if (err) { awShowMsg('Translation failed: ' + err, 'bad'); return; }
+      document.getElementById('aw-en').value = src;
+      document.getElementById('aw-es').value = es;
+    });
+  } else if (sourceLang === 'es') {
+    mymemory(src, 'es', 'en', function(err, en) {
+      done();
+      if (err) { awShowMsg('Translation failed: ' + err, 'bad'); return; }
+      document.getElementById('aw-es').value = src;
+      document.getElementById('aw-en').value = en;
+    });
+  } else {
+    var results = {};
+    var pending = 2;
+    function check() {
+      pending--;
+      if (pending === 0) {
+        done();
+        if (!results.en && !results.es) { awShowMsg('Translation failed — check connection', 'bad'); return; }
+        if (results.en) document.getElementById('aw-en').value = results.en;
+        if (results.es) document.getElementById('aw-es').value = results.es;
+      }
+    }
+    mymemory(src, 'pl', 'en', function(err, en) { if (!err && en) results.en = en; check(); });
+    mymemory(src, 'pl', 'es', function(err, es) { if (!err && es) results.es = es; check(); });
+  }
+}
+
+function awShowMsg(text, type) {
+  var msg = document.getElementById('aw-msg');
+  msg.textContent = text;
+  msg.className = 'aw-msg ' + type;
+  msg.style.display = 'block';
+  if (type === 'ok') setTimeout(function(){ msg.style.display='none'; }, 2500);
+}
+
+function awAdd() {
+  var en = document.getElementById('aw-en').value.trim();
+  var es = document.getElementById('aw-es').value.trim();
+  if (!en || !es) { awShowMsg('Please fill in both English and Spanish.', 'bad'); return; }
+  var words = getCustomWords();
+  var exists = words.some(function(w){ return w.es === es; }) || PHRASES.some(function(p){ return p.es === es; });
+  if (exists) { awShowMsg('This word already exists in the deck.', 'bad'); return; }
+  words.push({ es:es, en:en, cat:awCat, custom:true });
+  saveCustomWords(words);
+  document.getElementById('aw-en').value = '';
+  document.getElementById('aw-es').value = '';
+  document.getElementById('aw-source').value = '';
+  awShowMsg('✓ "' + es + '" added to flashcards!', 'ok');
+  renderAwList();
+}
+
+function awDelete(es) {
+  var words = getCustomWords().filter(function(w){ return w.es !== es; });
+  saveCustomWords(words);
+  renderAwList();
+  goHome();
+}
+
+function renderAwList() {
+  var words = getCustomWords();
+  document.getElementById('aw-count').textContent = words.length;
+  var el = document.getElementById('aw-list');
+  el.innerHTML = '';
+  if (words.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:.4rem 0">No custom words yet.</div>';
+    return;
+  }
+  words.forEach(function(w) {
+    var div = document.createElement('div');
+    div.className = 'aw-custom-item';
+    var c = getCard(w);
+    var status = c.repetitions === 0 ? 'new' : 'interval: '+c.interval+'d';
+    div.innerHTML = '<div><div style="font-family:var(--serif)">' + w.es + '</div><div class="aw-status">' + w.en + ' · ' + status + '</div></div>';
+    var del = document.createElement('button');
+    del.className = 'aw-del';
+    del.textContent = '✕';
+    del.onclick = (function(es){ return function(){ awDelete(es); }; })(w.es);
+    div.appendChild(del);
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHRASES BROWSER
+// ═══════════════════════════════════════════════════════════
+var plCat = 'All', plQuery = '';
+var PL_CATS_BASE = ['All'].concat(Array.from(new Set(PHRASES.map(function(p){ return p.cat; }))));
+
+function plCatClick(c) {
+  plCat = c;
+  var cats = PL_CATS_BASE.concat(getCustomWords().length ? ['My Words'] : []);
+  makeCatBar('pl-catbar', cats, plCat, plCatClick);
+  plRender();
+}
+
+function openPhrases() {
+  plCat = 'All'; plQuery = '';
+  document.getElementById('pl-search').value = '';
+  plCatClick('All');
+  showScreen('phrases');
+}
+
+function plSearch(q) { plQuery = q; plRender(); }
+
+function plRender() {
+  var pool;
+  if (plCat === 'My Words') pool = getCustomWords();
+  else if (plCat === 'All') pool = allPhrases();
+  else pool = allPhrases().filter(function(p){ return p.cat === plCat; });
+  if (plQuery) {
+    var q = plQuery.toLowerCase();
+    pool = pool.filter(function(p){ return p.es.toLowerCase().indexOf(q)>=0 || p.en.toLowerCase().indexOf(q)>=0; });
+  }
+  var el = document.getElementById('pl-list');
+  el.innerHTML = '';
+  pool.forEach(function(p) {
+    var div = document.createElement('div');
+    div.className = 'pl-item' + (p.custom ? ' pl-custom' : '');
+    var left = document.createElement('div');
+    var es = document.createElement('div'); es.className = 'pl-es'; es.textContent = p.es;
+    var en = document.createElement('div'); en.className = 'pl-en'; en.textContent = p.en;
+    left.appendChild(es); left.appendChild(en);
+    var cat = document.createElement('div'); cat.className = 'pl-cat'; cat.textContent = p.cat || 'Custom';
+    div.appendChild(left); div.appendChild(cat);
+    div.onclick = function(){ en.style.color = 'var(--red)'; };
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// READER — full word dictionary
+// ═══════════════════════════════════════════════════════════
+// Build map from phrases first
+var wordMap = {};
+PHRASES.forEach(function(p) {
+  p.es.replace(/[¿¡.,!?«»:;""'']/g,'').split(/\s+/).forEach(function(w){
+    if (w.length > 1) wordMap[w.toLowerCase()] = {es: p.es, en: p.en};
+  });
+});
+
+// Extended standalone dictionary — common words not covered by phrases
+var DICT = {
+  // articles & determiners
+  'el':'the (m)','la':'the (f)','los':'the (m.pl)','las':'the (f.pl)',
+  'un':'a / an (m)','una':'a / an (f)','unos':'some (m)','unas':'some (f)',
+  'este':'this (m)','esta':'this (f)','estos':'these (m)','estas':'these (f)',
+  'ese':'that (m)','esa':'that (f)','aquel':'that (far, m)','aquella':'that (far, f)',
+  // pronouns
+  'yo':'I','tú':'you (informal)','él':'he','ella':'she','nosotros':'we',
+  'vosotros':'you (pl, Spain)','ellos':'they (m)','ellas':'they (f)',
+  'usted':'you (formal)','ustedes':'you (formal pl)',
+  'me':'me / myself','te':'you / yourself','se':'himself / herself / itself',
+  'nos':'us / ourselves','le':'him / her / you (indirect)',
+  'lo':'it / him (direct)','la':'her / it (direct)',
+  'mi':'my','tu':'your','su':'his / her / their / your (formal)',
+  'nuestro':'our','vuestro':'your (pl Spain)',
+  // prepositions
+  'a':'to / at','de':'of / from','en':'in / on / at','con':'with',
+  'por':'for / by / through','para':'for / in order to','sin':'without',
+  'sobre':'on / about','entre':'between / among','bajo':'under / below',
+  'ante':'before / in front of','tras':'after / behind','desde':'from / since',
+  'hasta':'until / up to','según':'according to','durante':'during',
+  'mediante':'by means of','contra':'against','hacia':'towards',
+  // conjunctions
+  'y':'and','e':'and (before i/hi)','o':'or','u':'or (before o/ho)',
+  'pero':'but','sino':'but rather','aunque':'although / even though',
+  'porque':'because','que':'that / which / who','si':'if',
+  'cuando':'when','como':'as / like / how','donde':'where',
+  'mientras':'while','después':'after / afterwards','antes':'before',
+  'pues':'well / since','así':'so / thus','también':'also / too',
+  'tampoco':'neither / not either','además':'moreover / furthermore',
+  'sin embargo':'however','por lo tanto':'therefore','es decir':'that is',
+  // common verbs (infinitives & conjugations)
+  'es':'is (ser)','son':'are (ser)','soy':'I am (ser)','eres':'you are (ser)',
+  'somos':'we are (ser)','estoy':'I am (estar)','está':'is (estar)',
+  'están':'are (estar)','estamos':'we are (estar)','estás':'you are (estar)',
+  'tiene':'has / have (3rd sg)','tienen':'have (3rd pl)','tenemos':'we have',
+  'tienes':'you have','hay':'there is / there are',
+  'puede':'can / is able to','pueden':'can (pl)','puedo':'I can',
+  'quiere':'wants','quieren':'want (pl)','quiero':'I want',
+  'hace':'does / makes','hacen':'do / make (pl)','hago':'I do / make',
+  'dice':'says','dicen':'say (pl)','digo':'I say',
+  'va':'goes','van':'go (pl)','voy':'I go','vamos':'we go',
+  'viene':'comes','vienen':'come (pl)','vengo':'I come',
+  'sabe':'knows','saben':'know (pl)','sé':'I know',
+  've':'sees','ven':'see (pl)','veo':'I see',
+  'da':'gives','dan':'give (pl)','doy':'I give',
+  'pone':'puts','ponen':'put (pl)','pongo':'I put',
+  'lleva':'carries / wears / takes','lleva':'takes / carries',
+  'llega':'arrives','llegan':'arrive (pl)','llegamos':'we arrive',
+  'sale':'leaves / goes out','salen':'leave (pl)','salgo':'I leave',
+  'toma':'takes / drinks','toman':'take (pl)',
+  'habla':'speaks','hablan':'speak (pl)','hablo':'I speak',
+  'fue':'was / went (past)','era':'was (imperfect)','había':'there was (imperfect)',
+  'han':'have (aux, pl)','ha':'has (aux)','he':'I have (aux)',
+  'ser':'to be (permanent)','estar':'to be (temporary)','tener':'to have',
+  'hacer':'to do / make','ir':'to go','venir':'to come','ver':'to see',
+  'dar':'to give','saber':'to know','poder':'to be able to',
+  'querer':'to want / love','decir':'to say','poner':'to put',
+  'llegar':'to arrive','salir':'to leave','llevar':'to carry / wear',
+  'pasar':'to pass / happen','quedar':'to stay / remain','seguir':'to follow / continue',
+  'encontrar':'to find','volver':'to return','creer':'to believe / think',
+  'conocer':'to know (person/place)','pensar':'to think','vivir':'to live',
+  'trabajar':'to work','necesitar':'to need','parecer':'to seem',
+  'sentir':'to feel','dejar':'to leave / let','llamar':'to call',
+  'usar':'to use','comenzar':'to begin','empezar':'to start',
+  // common adjectives
+  'nuevo':'new (m)','nueva':'new (f)','buenos':'good (m.pl)','buenas':'good (f.pl)',
+  'grande':'big / great','pequeño':'small (m)','pequeña':'small (f)',
+  'mismo':'same (m)','misma':'same (f)','otro':'other (m)','otra':'other (f)',
+  'primer':'first (m)','primera':'first (f)','último':'last (m)','última':'last (f)',
+  'propio':'own (m)','propia':'own (f)','solo':'alone / only','sola':'alone (f)',
+  'cada':'each / every','todo':'all / every (m)','toda':'all (f)',
+  'todos':'all (m.pl)','todas':'all (f.pl)','mucho':'a lot (m)','mucha':'a lot (f)',
+  'muchos':'many (m)','muchas':'many (f)','poco':'little (m)','poca':'little (f)',
+  'pocos':'few (m)','pocas':'few (f)','más':'more','menos':'less',
+  'muy':'very','tan':'so / as','tanto':'so much','mejor':'better / best',
+  'peor':'worse / worst','mayor':'greater / older','menor':'lesser / younger',
+  'diferente':'different','importante':'important','posible':'possible',
+  'social':'social','nacional':'national','político':'political (m)',
+  'económico':'economic (m)','público':'public (m)','privado':'private (m)',
+  'internacional':'international','general':'general','especial':'special',
+  'real':'real / royal','natural':'natural','local':'local',
+  'humano':'human (m)','civil':'civil','legal':'legal','total':'total',
+  'cultural':'cultural','comercial':'commercial','principal':'main / principal',
+  'central':'central','digital':'digital','global':'global','oficial':'official',
+  // common nouns
+  'año':'year','años':'years','vez':'time / occasion','veces':'times',
+  'día':'day','días':'days','tiempo':'time / weather','parte':'part',
+  'vida':'life','caso':'case','mundo':'world','país':'country',
+  'ciudad':'city','gobierno':'government','empresa':'company',
+  'sistema':'system','problema':'problem','trabajo':'work / job',
+  'nombre':'name','número':'number','persona':'person','personas':'people',
+  'lugar':'place','forma':'form / way','grupo':'group','agua':'water',
+  'casa':'house','hombre':'man','mujer':'woman','niño':'child (m)','niña':'child (f)',
+  'gente':'people','familia':'family','amigo':'friend (m)','amiga':'friend (f)',
+  'presidente':'president','ministro':'minister','director':'director',
+  'partido':'party (political) / match','ley':'law','euros':'euros',
+  'semana':'week','mes':'month','hora':'hour','minuto':'minute',
+  'información':'information','proceso':'process','programa':'programme',
+  'proyecto':'project','servicio':'service','cuenta':'account / bill',
+  'punto':'point','tipo':'type / kind','nivel':'level','datos':'data',
+  'parte':'part','medida':'measure','acuerdo':'agreement','resultado':'result',
+  // adverbs
+  'no':'no / not','sí':'yes','ya':'already / now / anymore',
+  'bien':'well','mal':'badly','aquí':'here','allí':'there',
+  'ahora':'now','hoy':'today','ayer':'yesterday','mañana':'tomorrow',
+  'siempre':'always','nunca':'never','casi':'almost','solo':'only / alone',
+  'aún':'still / yet','todavía':'still / yet','incluso':'even / including',
+  'solo':'only','principalmente':'mainly','especialmente':'especially',
+  'generalmente':'generally','finalmente':'finally','además':'besides / also',
+  'recientemente':'recently','actualmente':'currently','anteriormente':'previously',
+  // numbers (words)
+  'uno':'one','dos':'two','tres':'three','cuatro':'four','cinco':'five',
+  'seis':'six','siete':'seven','ocho':'eight','nueve':'nine','diez':'ten',
+  'once':'eleven','doce':'twelve','veinte':'twenty','treinta':'thirty',
+  'cien':'one hundred','mil':'one thousand','millón':'million',
+};
+
+// Merge dict into wordMap (phrases take priority)
+Object.keys(DICT).forEach(function(w) {
+  if (!wordMap[w]) wordMap[w] = {es: w, en: DICT[w]};
+});
+
+var ttTimer;
+function translateWord(el, clean) {
+  document.querySelectorAll('.rword.hit').forEach(function(w){ w.classList.remove('hit'); });
+  el.classList.add('hit');
+  var m = wordMap[clean];
+  showTooltip(document.getElementById('tooltip'), document.getElementById('tt-es'), document.getElementById('tt-en'), el, m ? m.es : clean, m ? m.en : '(not in dictionary)');
+}
+
+function showTooltip(tt, esEl, enEl, anchor, es, en) {
+  esEl.textContent = es;
+  enEl.textContent = en;
+  var r = anchor.getBoundingClientRect();
+  tt.style.left = Math.min(window.innerWidth-215, Math.max(8, r.left-20))+'px';
+  tt.style.top = Math.max(8, r.top-72)+'px';
+  tt.classList.add('show');
+  clearTimeout(ttTimer);
+  ttTimer = setTimeout(function(){ tt.classList.remove('show'); anchor.classList.remove('hit'); }, 3000);
+}
+
+var PASSAGES = [
+  {title:"At the café", text:"Buenos días. ¿Qué desea tomar? Quiero un café con leche y un bocadillo de jamón, por favor. ¿Tiene la carta? Claro, aquí tiene. ¿Cuánto es? Son cinco euros. Muchas gracias. De nada, buen provecho."},
+  {title:"Asking for directions", text:"Perdone, ¿dónde está la catedral? Siga todo recto y gire a la derecha en el semáforo. ¿Está lejos? No, está muy cerca, a cinco minutos a pie. ¡Muchas gracias! De nada, ¡que lo pase bien!"},
+  {title:"At the hotel", text:"Buenas tardes. Tengo una reserva a nombre de García. Una habitación doble para dos noches. ¿A qué hora es el check-out? A las doce. ¿Hay wifi? Sí, la contraseña está en la tarjeta. Muchas gracias."},
+  {title:"Shopping", text:"Buenos días, ¿cuánto cuesta este queso? Son ocho euros el kilo. ¿Tiene algo más barato? Sí, este cuesta cinco euros. ¿Acepta tarjeta? Lo siento, solo en efectivo. Vale, me lo llevo."},
+  {title:"On the train", text:"¿Este asiento está ocupado? No, está libre. ¿Para en Sevilla este tren? Sí, llegamos en treinta minutos. ¿Hay retraso? No, el tren llega puntual. Perfecto, muchas gracias."}
+];
+
+function openReader() {
+  var body = document.getElementById('reader-body');
+  body.innerHTML = '';
+  PASSAGES.forEach(function(p) {
+    var div = document.createElement('div'); div.className = 'passage';
+    var h3 = document.createElement('h3'); h3.textContent = p.title; div.appendChild(h3);
+    var td = document.createElement('div'); td.className = 'rtext';
+    p.text.split(/(\s+)/).forEach(function(tok) {
+      var clean = tok.replace(/[¿¡.,!?«»:;""'']/g,'').toLowerCase();
+      if (clean.length > 0) {
+        var span = document.createElement('span');
+        span.className = 'rword'; span.textContent = tok;
+        span.onclick = (function(c){ return function(){ translateWord(span,c); }; })(clean);
+        td.appendChild(span);
+      } else { td.appendChild(document.createTextNode(tok)); }
+    });
+    div.appendChild(td); body.appendChild(div);
+  });
+  var hint = document.createElement('p');
+  hint.style.cssText = 'font-size:.72rem;color:var(--muted);padding:.4rem 0 2rem;text-align:center';
+  hint.textContent = 'Tap any word to translate';
+  body.appendChild(hint);
+  showScreen('reader');
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════════
+var qDeck=[], qIdx=0, qScore=0, qAnswered=false, qMode='es2en';
+
+function quizSetMode(mode, btn) {
+  qMode = mode;
+  ['es2en','en2es'].forEach(function(m){ document.getElementById('qm-'+m).classList.remove('on'); });
+  btn.classList.add('on');
+  // restart quiz with new mode
+  openQuiz();
+}
+
+function openQuiz() {
+  qDeck = allPhrases().slice().sort(function(){ return Math.random()-.5; }).slice(0,10);
+  qIdx=0; qScore=0;
+  document.getElementById('quiz-done').classList.remove('show');
+  document.getElementById('quiz-body').style.display='flex';
+  qShow(); showScreen('quiz');
+}
+
+function qShow() {
+  qAnswered = false;
+  var p = qDeck[qIdx];
+  document.getElementById('quiz-prog').textContent = (qIdx+1)+'/10';
+  // mode: es2en shows Spanish, pick English; en2es shows English, pick Spanish
+  var isEs2En = qMode === 'es2en';
+  document.getElementById('quiz-qlbl').textContent = isEs2En ? 'What does this mean in English?' : 'How do you say this in Spanish?';
+  document.getElementById('quiz-q').textContent = isEs2En ? p.es : p.en;
+  document.getElementById('quiz-ctx').textContent = p.tip ? '('+p.tip+')' : '';
+  document.getElementById('quiz-fb').className = 'quiz-fb';
+  document.getElementById('quiz-fb').textContent = '';
+  document.getElementById('quiz-next').className = 'quiz-next';
+  var pool = allPhrases();
+  var correctAnswer = isEs2En ? p.en : p.es;
+  var wrong = pool.filter(function(x){ return (isEs2En ? x.en : x.es) !== correctAnswer; })
+                  .sort(function(){ return Math.random()-.5; }).slice(0,3);
+  var opts = wrong.map(function(x){ return isEs2En ? x.en : x.es; }).concat([correctAnswer])
+                  .sort(function(){ return Math.random()-.5; });
+  var optsEl = document.getElementById('quiz-opts');
+  optsEl.innerHTML = '';
+  opts.forEach(function(o) {
+    var btn = document.createElement('button');
+    btn.className = 'quiz-opt'; btn.textContent = o;
+    btn.onclick = (function(chosen, correct){ return function(){ qAnswer(btn, chosen, correct); }; })(o, correctAnswer);
+    optsEl.appendChild(btn);
+  });
+}
+
+function qAnswer(btn, chosen, correct) {
+  if (qAnswered) return;
+  qAnswered = true;
+  document.querySelectorAll('.quiz-opt').forEach(function(b){ b.onclick=null; });
+  var fb = document.getElementById('quiz-fb');
+  if (chosen === correct) {
+    btn.classList.add('ok'); qScore++;
+    fb.textContent = '✓ Correct!'; fb.className = 'quiz-fb show ok';
+  } else {
+    btn.classList.add('bad');
+    document.querySelectorAll('.quiz-opt').forEach(function(b){ if(b.textContent===correct) b.classList.add('ok'); });
+    fb.textContent = '✗ Answer: '+correct; fb.className = 'quiz-fb show bad';
+  }
+  document.getElementById('quiz-next').className = 'quiz-next show';
+}
+
+function quizNext() {
+  qIdx++;
+  if (qIdx < 10) { qShow(); return; }
+  document.getElementById('quiz-body').style.display='none';
+  var pct = Math.round(qScore/10*100);
+  document.getElementById('qd-icon').textContent = pct>=70?'🏆':pct>=40?'📚':'💪';
+  document.getElementById('qd-h2').textContent = pct>=70?'Excellent!':pct>=40?'Good progress!':'Keep going!';
+  document.getElementById('qd-p').textContent = qScore+'/10 correct ('+pct+'%)';
+  document.getElementById('quiz-done').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// NUMBERS
+// ═══════════════════════════════════════════════════════════
+var NW={0:'cero',1:'uno',2:'dos',3:'tres',4:'cuatro',5:'cinco',6:'seis',7:'siete',8:'ocho',9:'nueve',10:'diez',11:'once',12:'doce',13:'trece',14:'catorce',15:'quince',16:'dieciséis',17:'diecisiete',18:'dieciocho',19:'diecinueve',20:'veinte',21:'veintiuno',22:'veintidós',23:'veintitrés',24:'veinticuatro',25:'veinticinco',26:'veintiséis',27:'veintisiete',28:'veintiocho',29:'veintinueve',30:'treinta',40:'cuarenta',50:'cincuenta',60:'sesenta',70:'setenta',80:'ochenta',90:'noventa',100:'cien',200:'doscientos',300:'trescientos',400:'cuatrocientos',500:'quinientos',600:'seiscientos',700:'setecientos',800:'ochocientos',900:'novecientos',1000:'mil',1000000:'un millón'};
+function n2s(n){if(NW[n])return NW[n];if(n<100)return NW[Math.floor(n/10)*10]+' y '+NW[n%10];if(n<1000){var h=Math.floor(n/100)*100,r=n%100,base=(h===100&&r>0)?'ciento':NW[h];return r>0?base+' '+n2s(r):base;}if(n<1000000){var t=Math.floor(n/1000),r=n%1000,pre=t===1?'mil':n2s(t)+' mil';return r>0?pre+' '+n2s(r):pre;}return 'un millón';}
+function rndNum(){var pools=[function(){return Math.floor(Math.random()*19)+1;},function(){return(Math.floor(Math.random()*9)+1)*10;},function(){return Math.floor(Math.random()*98)+2;},function(){return(Math.floor(Math.random()*9)+1)*100;},function(){return Math.floor(Math.random()*899)+100;},function(){return(Math.floor(Math.random()*9)+1)*1000;},function(){return Math.floor(Math.random()*8999)+1000;},function(){return(Math.floor(Math.random()*9)+1)*10000;},function(){return Math.floor(Math.random()*899999)+1000;}];return pools[Math.floor(Math.random()*pools.length)]();}
+var numMode='drill', curNum=1, numQuizAnswered=false;
+function openNumbers(){numSetMode('drill',document.getElementById('nc-drill'));showScreen('numbers');}
+function numSetMode(mode,btn){
+  numMode=mode;
+  ['drill','read','type','quiz'].forEach(function(m){ var el=document.getElementById('nc-'+m); if(el) el.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('num-mode-lbl').textContent=mode==='drill'?'Drill':mode==='read'?'Read Spanish':mode==='type'?'Type it':'Number Quiz';
+  numNext();
+}
+function numNext(){
+  curNum=rndNum();
+  var sp=n2s(curNum);
+  numQuizAnswered=false;
+  document.getElementById('num-reveal').style.display='none';
+  document.getElementById('num-fb').style.display='none';
+  document.getElementById('num-input-wrap').style.display='none';
+  document.getElementById('num-quiz-opts').style.display='none';
+  document.getElementById('num-quiz-opts').innerHTML='';
+  document.getElementById('num-input').value='';
+  document.getElementById('num-q').onclick=null;
+
+  if(numMode==='drill'){
+    document.getElementById('num-q').textContent=curNum.toLocaleString();
+    document.getElementById('num-sub').textContent='Tap to reveal Spanish';
+    document.getElementById('num-q').onclick=function(){document.getElementById('num-reveal').textContent=sp;document.getElementById('num-reveal').style.display='block';document.getElementById('num-sub').textContent='';};
+  } else if(numMode==='read'){
+    document.getElementById('num-q').textContent=sp;
+    document.getElementById('num-sub').textContent='What number is this? Tap to reveal.';
+    document.getElementById('num-q').onclick=function(){document.getElementById('num-reveal').textContent=curNum.toLocaleString();document.getElementById('num-reveal').style.display='block';document.getElementById('num-sub').textContent='';};
+  } else if(numMode==='type'){
+    document.getElementById('num-q').textContent=curNum.toLocaleString();
+    document.getElementById('num-sub').textContent='Type the Spanish';
+    document.getElementById('num-input-wrap').style.display='block';
+  } else if(numMode==='quiz'){
+    // show Spanish word, pick the correct number from 4 options
+    document.getElementById('num-q').textContent=sp;
+    document.getElementById('num-sub').textContent='Which number is this?';
+    // generate 3 wrong numbers, same magnitude range
+    var wrongs=[];
+    var attempts=0;
+    while(wrongs.length<3 && attempts<50){
+      attempts++;
+      var w=rndNum();
+      if(w!==curNum && wrongs.indexOf(w)<0) wrongs.push(w);
+    }
+    var opts=wrongs.concat([curNum]).sort(function(){return Math.random()-.5;});
+    var optsEl=document.getElementById('num-quiz-opts');
+    optsEl.style.display='flex';
+    optsEl.style.flexDirection='column';
+    optsEl.style.gap='0.65rem';
+    opts.forEach(function(o){
+      var btn=document.createElement('button');
+      btn.className='quiz-opt';
+      btn.textContent=o.toLocaleString();
+      btn.onclick=(function(chosen,correct){
+        return function(){
+          if(numQuizAnswered) return;
+          numQuizAnswered=true;
+          optsEl.querySelectorAll('.quiz-opt').forEach(function(b){b.onclick=null;});
+          var fb=document.getElementById('num-fb');
+          fb.style.display='block';
+          if(chosen===correct){
+            btn.classList.add('ok');
+            fb.textContent='✓ Correct! '+n2s(correct)+' = '+correct.toLocaleString();
+            fb.style.background='#E8F5E8'; fb.style.color='var(--success)';
+          } else {
+            btn.classList.add('bad');
+            optsEl.querySelectorAll('.quiz-opt').forEach(function(b){ if(b.textContent===correct.toLocaleString()) b.classList.add('ok'); });
+            fb.textContent='✗ Answer: '+correct.toLocaleString()+' ('+n2s(correct)+')';
+            fb.style.background='#FCEAEA'; fb.style.color='var(--danger)';
+          }
+        };
+      })(o,curNum);
+      optsEl.appendChild(btn);
+    });
+  }
+}
+function numCheck(){var val=document.getElementById('num-input').value.trim().toLowerCase().replace(/\s+/g,' ');var correct=n2s(curNum).toLowerCase();var fb=document.getElementById('num-fb');fb.style.display='block';if(val===correct){fb.textContent='✓ Correct!';fb.style.background='#E8F5E8';fb.style.color='var(--success)';}else{fb.textContent='✗ Answer: '+n2s(curNum);fb.style.background='#FCEAEA';fb.style.color='var(--danger)';}}
+
+// ═══════════════════════════════════════════════════════════
+// SPECIALS
+// ═══════════════════════════════════════════════════════════
+var spCat='All', spQuery='';
+var SP_CATS=['All','Finance','Tennis','Football'];
+function spCatClick(c){spCat=c;makeCatBar('sp-catbar',SP_CATS,spCat,spCatClick);spRender();}
+function openSpecials(startCat){spCat=startCat||'All';spQuery='';document.getElementById('sp-search').value='';document.getElementById('sp-title').textContent=startCat==='Finance'?'Financial Spanish':'Sports Spanish';makeCatBar('sp-catbar',SP_CATS,spCat,spCatClick);spRender();showScreen('specials');}
+function spSearch(q){spQuery=q;spRender();}
+function spRender(){
+  var items=spCat==='All'?SPECIALS:SPECIALS.filter(function(p){return p.cat===spCat;});
+  if(spQuery){var q=spQuery.toLowerCase();items=items.filter(function(p){return p.es.toLowerCase().indexOf(q)>=0||p.en.toLowerCase().indexOf(q)>=0;});}
+  var el=document.getElementById('sp-list'); el.innerHTML='';
+  items.forEach(function(p){
+    var div=document.createElement('div'); div.className='pl-item';
+    var left=document.createElement('div');
+    var es=document.createElement('div'); es.className='pl-es'; es.textContent=p.es;
+    var en=document.createElement('div'); en.className='pl-en'; en.textContent=p.en+(p.tip?' · '+p.tip:'');
+    left.appendChild(es); left.appendChild(en);
+    var cat=document.createElement('div'); cat.className='pl-cat'; cat.textContent=p.cat;
+    div.appendChild(left); div.appendChild(cat);
+    div.onclick=function(){en.style.color='var(--red)';};
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARTICLE READER — BBC Mundo
+// ═══════════════════════════════════════════════════════════
+
+var BBC_RSS = 'https://feeds.bbci.co.uk/mundo/rss.xml';
+var artCurrentArticles = [];
+
+var BBC_FEED = 'https://feeds.bbci.co.uk/mundo/rss.xml';
+
+// Set this to your server URL after deploying, e.g. 'https://espana-express.up.railway.app'
+// Leave as empty string to use proxy fallback
+var API_BASE = '';
+
+function artLoadBBC() {
+  artSetStatus('⏳ Loading BBC Mundo…', 'info');
+  document.getElementById('art-body').innerHTML = '';
+  if (API_BASE) {
+    artLoadFromServer();
+  } else {
+    artTryRss2json();
+  }
+}
+
+// ── Path 1: own server (most reliable) ───────────────────────
+function artLoadFromServer() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', API_BASE + '/feed', true);
+  xhr.timeout = 10000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        if (data.ok && data.articles && data.articles.length > 0) {
+          artCurrentArticles = data.articles;
+          artSetStatus('', '');
+          artRenderList(data.articles);
+          return;
+        }
+      } catch(e) {}
+    }
+    artSetStatus('Server error — trying fallback…', 'info');
+    artTryRss2json();
+  };
+  xhr.onerror = function() { artTryRss2json(); };
+  xhr.ontimeout = function() { artTryRss2json(); };
+  xhr.send();
+}
+
+// ── Path 2: rss2json.com ──────────────────────────────────────
+function artTryRss2json() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(BBC_FEED) + '&count=5', true);
+  xhr.timeout = 10000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        if (data.status === 'ok' && data.items && data.items.length > 0) {
+          var articles = data.items.map(function(item) {
+            return {
+              title: item.title || '',
+              desc: (item.description || '').replace(/<[^>]+>/g,'').trim(),
+              link: item.link || item.url || ''
+            };
+          });
+          artCurrentArticles = articles;
+          artSetStatus('', '');
+          artRenderList(articles);
+          return;
+        }
+      } catch(e) {}
+    }
+    artTryXmlProxy(0);
+  };
+  xhr.onerror = function() { artTryXmlProxy(0); };
+  xhr.ontimeout = function() { artTryXmlProxy(0); };
+  xhr.send();
+}
+
+// ── Path 3: raw XML via CORS proxies ─────────────────────────
+var XML_PROXIES = [
+  function(u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); },
+  function(u) { return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); },
+];
+
+function artTryXmlProxy(idx) {
+  if (idx >= XML_PROXIES.length) {
+    artSetStatus('', '');
+    artShowManualPaste('Could not load feed automatically.\nPaste any Spanish article text below to use the reader.');
+    return;
+  }
+  artSetStatus('⏳ Trying source ' + (idx + 2) + '/3…', 'info');
+  var proxyUrl = XML_PROXIES[idx](BBC_FEED);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', proxyUrl, true);
+  xhr.timeout = 10000;
+  xhr.onload = function() {
+    if (xhr.status !== 200) { artTryXmlProxy(idx + 1); return; }
+    var text = xhr.responseText;
+    if (proxyUrl.indexOf('allorigins') >= 0) {
+      try { text = JSON.parse(text).contents; } catch(e) { artTryXmlProxy(idx + 1); return; }
+    }
+    if (!text || text.length < 200 || text.indexOf('<item') < 0) { artTryXmlProxy(idx + 1); return; }
+    artParseAndRenderFeed(text);
+  };
+  xhr.onerror = function() { artTryXmlProxy(idx + 1); };
+  xhr.ontimeout = function() { artTryXmlProxy(idx + 1); };
+  xhr.send();
+}
+
+function artParseAndRenderFeed(xmlText) {
+  try {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(xmlText, 'text/xml');
+    var items = doc.querySelectorAll('item');
+    if (!items || items.length === 0) {
+      artShowManualPaste('No articles found in feed.');
+      return;
+    }
+    var articles = [];
+    for (var i = 0; i < Math.min(5, items.length); i++) {
+      var item = items[i];
+      // title may be wrapped in CDATA
+      var titleEl = item.querySelector('title');
+      var title = titleEl ? titleEl.textContent.replace(/^<!\[CDATA\[|\]\]>$/g,'').trim() : '';
+      var descEl = item.querySelector('description');
+      var desc = descEl ? descEl.textContent.replace(/<[^>]+>/g,'').replace(/^<!\[CDATA\[|\]\]>$/g,'').trim() : '';
+      // link is tricky in RSS — try <link> text node or <guid>
+      var link = '';
+      var linkEl = item.querySelector('link');
+      if (linkEl) {
+        // In some RSS, <link> is followed by a text node
+        link = linkEl.textContent.trim();
+        if (!link) {
+          // Try nextSibling text node (RSS quirk)
+          var sib = linkEl.nextSibling;
+          if (sib && sib.nodeType === 3) link = sib.textContent.trim();
+        }
+      }
+      if (!link) {
+        var guidEl = item.querySelector('guid');
+        if (guidEl) link = guidEl.textContent.trim();
+      }
+      articles.push({ title: title, desc: desc, link: link });
+    }
+    artCurrentArticles = articles;
+    artSetStatus('', '');
+    artRenderList(articles);
+  } catch(e) {
+    artShowManualPaste('Could not parse feed: ' + e.message);
+  }
+}
+
+function artRenderList(articles) {
+  artSetStatus('', '');
+  var body = document.getElementById('art-body');
+  body.innerHTML = '';
+
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:.1rem .1rem .85rem;';
+  hdr.textContent = 'BBC Mundo \u2014 5 latest articles \u2014 tap to read';
+  body.appendChild(hdr);
+
+  articles.forEach(function(article) {
+    var card = document.createElement('div');
+    card.className = 'passage';
+    card.style.cssText = 'cursor:pointer;margin-bottom:.7rem;';
+
+    // Spanish title
+    var tEs = document.createElement('div');
+    tEs.style.cssText = 'font-family:var(--serif);font-size:1rem;color:var(--dark);line-height:1.35;margin-bottom:.28rem;';
+    tEs.textContent = article.title;
+
+    // English title — translated on the fly
+    var tEn = document.createElement('div');
+    tEn.style.cssText = 'font-size:.76rem;color:#1a5fa8;font-style:italic;line-height:1.4;margin-bottom:.32rem;';
+    tEn.textContent = '\u2026';
+    artTranslateEl(article.title, tEn);
+
+    // Description
+    var dEl = document.createElement('div');
+    dEl.style.cssText = 'font-size:.74rem;color:var(--muted);line-height:1.5;margin-bottom:.32rem;';
+    dEl.textContent = article.desc.length > 110 ? article.desc.substring(0,110)+'\u2026' : article.desc;
+
+    var arr = document.createElement('div');
+    arr.style.cssText = 'font-size:.68rem;color:var(--red);';
+    arr.textContent = 'Tap to read full article \u2192';
+
+    card.appendChild(tEs);
+    card.appendChild(tEn);
+    if (dEl.textContent) card.appendChild(dEl);
+    card.appendChild(arr);
+    card.onclick = (function(a){ return function(){ artOpenArticle(a); }; })(article);
+    body.appendChild(card);
+  });
+}
+
+// Translate a short text and put it in an element
+function artTranslateEl(text, el) {
+  if (!text) return;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.substring(0,250)) + '&langpair=es%7Cen', true);
+  xhr.timeout = 7000;
+  xhr.onload = function() {
+    try {
+      var d = JSON.parse(xhr.responseText);
+      var t = d.responseData.translatedText;
+      if (t && t.length > 2 && t !== text) el.textContent = t;
+      else el.textContent = '';
+    } catch(e) { el.textContent = ''; }
+  };
+  xhr.onerror = xhr.ontimeout = function() { el.textContent = ''; };
+  xhr.send();
+}
+
+// ── Open a single article ────────────────────────────────────
+function artOpenArticle(article) {
+  var body = document.getElementById('art-body');
+  body.innerHTML = '';
+  artSetStatus('\u23f3 Loading full article\u2026', 'info');
+
+  var back = document.createElement('button');
+  back.textContent = '\u2190 Back to headlines';
+  back.style.cssText = 'background:none;border:none;color:var(--red);font-size:.82rem;cursor:pointer;padding:.15rem 0 .85rem;font-family:var(--sans);display:block;';
+  back.onclick = function() { artRenderList(artCurrentArticles); };
+  body.appendChild(back);
+
+  if (!article.link || !article.link.startsWith('http')) {
+    artSetStatus('', '');
+    artRenderArticleBody(article, article.desc);
+    return;
+  }
+  artFetchFull(article, 0);
+}
+
+var ARTICLE_PROXIES = [
+  function(u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); },
+  function(u) { return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); },
+];
+
+function artFetchFull(article, idx) {
+  // Use own server if configured
+  if (idx === 0 && API_BASE) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + '/article?url=' + encodeURIComponent(article.link), true);
+    xhr.timeout = 12000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (data.ok && data.paragraphs && data.paragraphs.length > 0) {
+            if (data.title && !article.title) article.title = data.title;
+            artSetStatus('', '');
+            artRenderArticleBody(article, data.paragraphs.join('\n'));
+            return;
+          }
+        } catch(e) {}
+      }
+      artFetchFull(article, 1); // fall through to proxies
+    };
+    xhr.onerror = function() { artFetchFull(article, 1); };
+    xhr.ontimeout = function() { artFetchFull(article, 1); };
+    xhr.send();
+    return;
+  }
+
+  // Proxy index is offset by 1 when server is configured
+  var proxyIdx = API_BASE ? idx - 1 : idx;
+  if (proxyIdx >= ARTICLE_PROXIES.length) {
+    artSetStatus('', '');
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:.73rem;color:var(--muted);padding:0 0 .6rem;';
+    note.textContent = '(Showing RSS summary — full article could not be loaded)';
+    document.getElementById('art-body').appendChild(note);
+    artRenderArticleBody(article, article.desc);
+    return;
+  }
+  var proxyUrl = ARTICLE_PROXIES[proxyIdx](article.link);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', proxyUrl, true);
+  xhr.timeout = 12000;
+  xhr.onload = function() {
+    if (xhr.status !== 200) { artFetchFull(article, idx+1); return; }
+    var html = xhr.responseText;
+    if (proxyUrl.indexOf('allorigins') >= 0) {
+      try { html = JSON.parse(html).contents; } catch(e) { artFetchFull(article, idx+1); return; }
+    }
+    if (!html || html.length < 300) { artFetchFull(article, idx+1); return; }
+    var text = artExtractText(html);
+    if (!text || text.length < 80) { artFetchFull(article, idx+1); return; }
+    artSetStatus('', '');
+    artRenderArticleBody(article, text);
+  };
+  xhr.onerror = function() { artFetchFull(article, idx+1); };
+  xhr.ontimeout = function() { artFetchFull(article, idx+1); };
+  xhr.send();
+}
+
+function artExtractText(html) {
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(html, 'text/html');
+  ['script','style','nav','footer','header','aside','figure','figcaption','iframe','form','button','noscript'].forEach(function(tag){
+    Array.from(doc.querySelectorAll(tag)).forEach(function(el){ el.remove(); });
+  });
+  // BBC Mundo specific selectors, then generic fallbacks
+  var selectors = [
+    '[data-component="text-block"]',
+    '.ssrcss-1q0x1qg-Paragraph',
+    'article p',
+    '.story-body__inner p',
+    'main p',
+    'p'
+  ];
+  for (var i = 0; i < selectors.length; i++) {
+    var nodes = doc.querySelectorAll(selectors[i]);
+    var paras = [];
+    nodes.forEach(function(n){
+      var t = n.textContent.replace(/\s+/g,' ').trim();
+      if (t.length > 30) paras.push(t);
+    });
+    if (paras.length >= 3) return paras.join('\n');
+  }
+  return '';
+}
+
+function artRenderArticleBody(article, text) {
+  var body = document.getElementById('art-body');
+
+  // Title ES
+  var tEs = document.createElement('div');
+  tEs.style.cssText = 'font-family:var(--serif);font-size:1.15rem;line-height:1.35;color:var(--dark);margin-bottom:.3rem;';
+  tEs.textContent = article.title;
+  body.appendChild(tEs);
+
+  // Title EN
+  var tEn = document.createElement('div');
+  tEn.style.cssText = 'font-size:.82rem;color:#1a5fa8;font-style:italic;margin-bottom:.8rem;';
+  tEn.textContent = '\u2026';
+  artTranslateEl(article.title, tEn);
+  body.appendChild(tEn);
+
+  if (article.link && article.link.startsWith('http')) {
+    var src = document.createElement('a');
+    src.href = article.link; src.target = '_blank';
+    src.style.cssText = 'font-size:.63rem;color:var(--muted);display:block;margin-bottom:.9rem;word-break:break-all;';
+    src.textContent = article.link;
+    body.appendChild(src);
+  }
+
+  // Paragraphs
+  var paras = text.split('\n').map(function(p){ return p.trim(); }).filter(function(p){ return p.length > 20; });
+  if (paras.length === 0) paras = [text];
+
+  paras.forEach(function(para) {
+    var card = document.createElement('div');
+    card.className = 'passage';
+    card.style.marginBottom = '.6rem';
+
+    // Spanish — tappable words
+    var esDiv = document.createElement('div');
+    esDiv.className = 'rtext';
+    esDiv.style.marginBottom = '.45rem';
+    para.split(/(\s+)/).forEach(function(tok) {
+      var clean = tok.replace(/[¿¡.,!?«»:;""''\u2019\u2018()\[\]\u2014\u2013]/g,'').toLowerCase();
+      if (clean.length > 0) {
+        var span = document.createElement('span');
+        span.className = 'rword';
+        span.textContent = tok;
+        span.onclick = (function(c,s){ return function(){ artTranslateWord(s,c); }; })(clean, span);
+        esDiv.appendChild(span);
+      } else {
+        esDiv.appendChild(document.createTextNode(tok));
+      }
+    });
+    card.appendChild(esDiv);
+
+    // Toggle for English paragraph translation
+    var toggle = document.createElement('button');
+    toggle.style.cssText = 'background:none;border:none;font-size:.68rem;color:var(--red);cursor:pointer;font-family:var(--sans);padding:0;display:block;margin-top:.2rem;';
+    toggle.textContent = '\u25b6 Show English';
+
+    var enDiv = document.createElement('div');
+    enDiv.style.cssText = 'font-size:.8rem;color:#1a5fa8;font-style:italic;line-height:1.55;margin-top:.35rem;display:none;border-top:1px dashed var(--border);padding-top:.35rem;';
+
+    var fetched = false;
+    toggle.onclick = (function(p, ed, tg){ return function() {
+      if (ed.style.display === 'none') {
+        ed.style.display = 'block';
+        tg.textContent = '\u25bc Hide English';
+        if (!fetched) { fetched = true; ed.textContent = '\u2026'; artTranslatePara(p, ed); }
+      } else {
+        ed.style.display = 'none';
+        tg.textContent = '\u25b6 Show English';
+      }
+    }; })(para, enDiv, toggle);
+
+    card.appendChild(toggle);
+    card.appendChild(enDiv);
+    body.appendChild(card);
+  });
+
+  var hint = document.createElement('p');
+  hint.style.cssText = 'font-size:.68rem;color:var(--muted);padding:.5rem 0 2.5rem;text-align:center;';
+  hint.textContent = paras.length + ' paragraphs \u00b7 tap words to translate \u00b7 \u25b6 for full English';
+  body.appendChild(hint);
+}
+
+function artTranslatePara(text, el) {
+  // Break into ~250-char chunks by sentence
+  var sentences = text.match(/[^.!?\n]+[.!?]*/g) || [text];
+  var chunks = [], cur = '';
+  sentences.forEach(function(s){
+    if ((cur+s).length > 250 && cur) { chunks.push(cur.trim()); cur = s; }
+    else cur += s;
+  });
+  if (cur.trim()) chunks.push(cur.trim());
+
+  var results = new Array(chunks.length).fill('');
+  var done = 0;
+  chunks.forEach(function(chunk, i){
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET','https://api.mymemory.translated.net/get?q='+encodeURIComponent(chunk)+'&langpair=es%7Cen',true);
+    xhr.timeout = 8000;
+    xhr.onload = function(){
+      try { results[i] = JSON.parse(xhr.responseText).responseData.translatedText || chunk; } catch(e){ results[i] = chunk; }
+      if (++done === chunks.length) el.textContent = results.join(' ');
+    };
+    xhr.onerror = xhr.ontimeout = function(){ if(++done===chunks.length) el.textContent = results.filter(Boolean).join(' '); };
+    xhr.send();
+  });
+}
+
+var artTtTimer;
+function artTranslateWord(el, clean) {
+  document.querySelectorAll('#art-body .rword.hit').forEach(function(w){ w.classList.remove('hit'); });
+  el.classList.add('hit');
+  var m = wordMap[clean];
+  var tt = document.getElementById('art-tooltip');
+  var esEl = document.getElementById('art-tt-es');
+  var enEl = document.getElementById('art-tt-en');
+  if (m) {
+    showTooltip(tt, esEl, enEl, el, m.es, m.en);
+  } else {
+    esEl.textContent = clean; enEl.textContent = '\u2026';
+    var r = el.getBoundingClientRect();
+    tt.style.left = Math.min(window.innerWidth-215, Math.max(8,r.left-20))+'px';
+    tt.style.top = Math.max(8,r.top-72)+'px';
+    tt.classList.add('show');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET','https://api.mymemory.translated.net/get?q='+encodeURIComponent(clean)+'&langpair=es%7Cen',true);
+    xhr.timeout = 5000;
+    xhr.onload = function(){
+      try {
+        var d = JSON.parse(xhr.responseText);
+        var t = d.responseData.translatedText;
+        enEl.textContent = t;
+        wordMap[clean] = {es:clean, en:t};
+      } catch(e){ enEl.textContent = '(not found)'; }
+    };
+    xhr.onerror = xhr.ontimeout = function(){ enEl.textContent = '(offline)'; };
+    xhr.send();
+    clearTimeout(artTtTimer);
+    artTtTimer = setTimeout(function(){ tt.classList.remove('show'); el.classList.remove('hit'); }, 5000);
+  }
+}
+
+function artShowManualPaste(msg) {
+  artSetStatus('', '');
+  var body = document.getElementById('art-body');
+  if (msg) {
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:.8rem;color:var(--danger);padding:.2rem .1rem .8rem;';
+    note.textContent = msg;
+    body.appendChild(note);
+  }
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:13px;border:1px solid var(--border);padding:1rem;';
+  box.innerHTML = '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem">Paste article text manually</div>'
+    + '<textarea id="art-paste-input" style="width:100%;height:140px;border:1.5px solid var(--border);border-radius:9px;padding:.6rem;font-size:.83rem;font-family:var(--sans);outline:none;resize:none" placeholder="Copy & paste any Spanish text here\u2026"></textarea>'
+    + '<button onclick="artLoadFromPaste()" style="margin-top:.55rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.9rem;cursor:pointer">Load pasted text</button>';
+  body.appendChild(box);
+}
+
+function artLoadFromPaste() {
+  var text = document.getElementById('art-paste-input').value.trim();
+  if (!text || text.length < 50) { artSetStatus('Please paste some article text first.', 'bad'); return; }
+  document.getElementById('art-body').innerHTML = '';
+  artSetStatus('', '');
+  artRenderArticleText('Pasted article', '', text);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+goHome();
+</script>
+</body>
+</html>
